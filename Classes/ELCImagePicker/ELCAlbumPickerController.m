@@ -28,10 +28,13 @@
     [super viewDidLoad];
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
 	
-	[self.navigationItem setTitle:NSLocalizedString(@"Loading...", nil)];
+	[self.navigationItem setTitle:@"Загрузка..."];
 
     UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self.parent action:@selector(cancelImagePicker)];
 	[self.navigationItem setRightBarButtonItem:cancelButton];
+    
+    self.navigationController.navigationBar.barTintColor = [UIColor darkGrayColor];
+    self.navigationController.navigationBar.translucent = NO;
 
     NSMutableArray *tempArray = [[NSMutableArray alloc] init];
 	self.assetGroups = tempArray;
@@ -106,7 +109,7 @@
 - (void)reloadTableView
 {
 	[self.tableView reloadData];
-	[self.navigationItem setTitle:NSLocalizedString(@"Select an Album", nil)];
+	[self.navigationItem setTitle:@"Альбомы"];
 }
 
 - (BOOL)shouldSelectAsset:(ELCAsset *)asset previousCount:(NSUInteger)previousCount
@@ -205,6 +208,12 @@
     [picker.assetGroup setAssetsFilter:[self assetFilter]];
     
 	picker.assetPickerFilterDelegate = self.assetPickerFilterDelegate;
+    
+    if ([self.parent isKindOfClass:[ELCImagePickerController class]]) {
+        if (((ELCImagePickerController *)self.parent).maximumImagesCount == 1) {
+            picker.singleSelection = YES;
+        }
+    }
 	
 	[self.navigationController pushViewController:picker animated:YES];
 }

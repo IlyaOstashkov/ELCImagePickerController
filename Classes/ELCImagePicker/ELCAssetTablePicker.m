@@ -148,7 +148,7 @@
         if (elcAsset.selected) selectionCount++;
     }
     BOOL shouldSelect = YES;
-    if ([self.parent respondsToSelector:@selector(shouldSelectAsset:previousCount:)]) {
+    if (!_singleSelection && [self.parent respondsToSelector:@selector(shouldSelectAsset:previousCount:)]) {
         shouldSelect = [self.parent shouldSelectAsset:asset previousCount:selectionCount];
     }
     return shouldSelect;
@@ -159,7 +159,7 @@
     if (self.singleSelection) {
 
         for (ELCAsset *elcAsset in self.elcAssets) {
-            if (asset != elcAsset) {
+            if (asset.selected && asset != elcAsset) {
                 elcAsset.selected = NO;
             }
         }
@@ -180,44 +180,7 @@
 
 - (void)assetDeselected:(ELCAsset *)asset
 {
-    if (self.singleSelection) {
-        for (ELCAsset *elcAsset in self.elcAssets) {
-            if (asset != elcAsset) {
-                elcAsset.selected = NO;
-            }
-        }
-    }
-
-    if (self.immediateReturn) {
-        NSArray *singleAssetArray = @[asset.asset];
-        [(NSObject *)self.parent performSelector:@selector(selectedAssets:) withObject:singleAssetArray afterDelay:0];
-    }
-    
-    int numOfSelectedElements = [[ELCConsole mainConsole] numOfSelectedElements];
-    if (asset.index < numOfSelectedElements - 1) {
-        NSMutableArray *arrayOfCellsToReload = [[NSMutableArray alloc] initWithCapacity:1];
-        
-        for (int i = 0; i < [self.elcAssets count]; i++) {
-            ELCAsset *assetInArray = [self.elcAssets objectAtIndex:i];
-            if (assetInArray.selected && (assetInArray.index > asset.index)) {
-                assetInArray.index -= 1;
-                
-                int row = i / self.columns;
-                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:0];
-                BOOL indexExistsInArray = NO;
-                for (NSIndexPath *indexInArray in arrayOfCellsToReload) {
-                    if (indexInArray.row == indexPath.row) {
-                        indexExistsInArray = YES;
-                        break;
-                    }
-                }
-                if (!indexExistsInArray) {
-                    [arrayOfCellsToReload addObject:indexPath];
-                }
-            }
-        }
-        [self.tableView reloadRowsAtIndexPaths:arrayOfCellsToReload withRowAnimation:UITableViewRowAnimationNone];
-    }
+    [self.tableView reloadData];
 }
 
 #pragma mark UITableViewDataSource Delegate Methods
